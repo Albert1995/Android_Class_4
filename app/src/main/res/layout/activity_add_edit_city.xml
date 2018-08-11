@@ -64,12 +64,14 @@
         android:layout_margin="10dp">
 
         <Button
+            android:id="@+id/btnCancelBack"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:text="Cancelar"
             android:onClick="btnCancelOnClick"/>
 
         <Button
+            android:id="@+id/btnAddEdit"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:text="Salvar"

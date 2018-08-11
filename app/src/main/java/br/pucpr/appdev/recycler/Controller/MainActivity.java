@@ -1,25 +1,25 @@
 package br.pucpr.appdev.recycler.Controller;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.LinearLayout;
 
-import br.pucpr.appdev.recycler.Model.City;
 import br.pucpr.appdev.recycler.Model.DataStore;
 import br.pucpr.appdev.recycler.R;
 import br.pucpr.appdev.recycler.View.CityAdapter;
@@ -62,7 +62,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
 
-                Log.d("Exemplo", "Single Tap");
+                View view = recyclerView.findChildViewUnder(e.getX(), e.getY());
+                int position = recyclerView.getChildAdapterPosition(view);
+
+                Intent i = new Intent(MainActivity.this, AddEditCity.class);
+                i.putExtra("toView", true);
+                i.putExtra("position", position);
+                startActivity(i);
 
                 return true;
             }
@@ -75,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(MainActivity.this, AddEditCity.class);
                 intent.putExtra("position", position);
-                startActivityForResult(intent, 2);
+                startActivity(intent);
 
                 return true;
             }
@@ -101,17 +107,28 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.registerReceiver(updateData, new IntentFilter("updateData"));
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onPause() {
+        super.onPause();
 
-        if (requestCode == 1 || requestCode == 2) {
-            if (resultCode == RESULT_OK) {
-                adapter.notifyDataSetChanged();
-            }
+        if (isFinishing()) {
+            LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+            broadcastManager.unregisterReceiver(updateData);
         }
     }
+
+    private BroadcastReceiver updateData = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            adapter.notifyDataSetChanged();
+        }
+    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -130,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.mnuAddCity:
                 Intent intent = new Intent(MainActivity.this, AddEditCity.class);
                 intent.putExtra("position", -1);
-                startActivityForResult(intent, 1);
+                startActivity(intent);
                 break;
 
             case R.id.mnuClear:
